@@ -1,26 +1,36 @@
 #include "udp_server.hpp"
-#include "dictionary.hpp"
+#include "user.hpp"
+#include "log.hpp"
 #include <memory>
 
 using namespace UdpServerModule;
-using namespace DictionaryModule;
+using namespace UserManageModule;
+using namespace LogSystemModule;
 
 int main(int argc, char *argv[])
 {
-    // 创建字典类对象
-    std::shared_ptr<Dictionary> dict = std::make_shared<Dictionary>();
-    dict->printDic();
+    // 创建UserManager对象
+    std::shared_ptr<UserManager> usm = std::make_shared<UserManager>();
     // 创建UdpServerModule对象
     std::shared_ptr<UdpServer> udp_server;
     if (argc == 1)
     {
-        // 绑定
-        udp_server = std::make_shared<UdpServer>(std::bind(&Dictionary::translate, dict.get(), std::placeholders::_1));
+        udp_server = std::make_shared<UdpServer>([&usm](const User &user)
+                                                 { usm->addUser(user); },
+                                                 [&usm](int sockfd, const std::string &message)
+                                                 { usm->dispatchMessage(sockfd, message); },
+                                                 [&usm](const User &user)
+                                                 { usm->delUser(user); });
     }
     else if (argc == 2)
     {
         uint16_t port = std::stoi(argv[1]);
-        udp_server = std::make_shared<UdpServer>(std::bind(&Dictionary::translate, dict.get(), std::placeholders::_1), port);
+        udp_server = std::make_shared<UdpServer>([&usm](const User &user)
+                                                 { usm->addUser(user); },
+                                                 [&usm](int sockfd, const std::string &message)
+                                                 { usm->dispatchMessage(sockfd, message); },
+                                                 [&usm](const User &user)
+                                                 { usm->delUser(user); }, port);
     }
     else
     {

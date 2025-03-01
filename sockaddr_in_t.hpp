@@ -16,14 +16,15 @@ namespace SockAddrInModule
         // 大端转换为本地端口值
         void NetPort2Local()
         {
-            _port = ntohs(_port);
+            _port = ntohs(_s_addr_in.sin_port);
         }
 
         // 将IP地址转换为小端字节序并按照点分十进制存储
         void NetIP2Local()
         {
             char buffer[1024] = {0};
-            _ip = inet_ntop(AF_INET, _ip.c_str(), buffer, sizeof(buffer));
+            const char *ip = inet_ntop(AF_INET, &_s_addr_in.sin_addr, buffer, sizeof(buffer));
+            _ip = buffer;
         }
 
     public:
@@ -69,7 +70,8 @@ namespace SockAddrInModule
         // 重载==
         bool operator==(const SockAddrIn &s)
         {
-            return _ip == s._ip && _port == _port;
+            return _ip == s._ip && _port == s._port;
+            // return _ip == s._ip;
         }
 
         // 获取struct sockaddr_in对象长度
