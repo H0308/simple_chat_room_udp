@@ -26,7 +26,21 @@ namespace UdpServerModule
     using namespace SockAddrInModule;
     using namespace ThreadPoolModule;
 
-    class UdpServer
+    // 防止被拷贝的类
+    class NoCopy
+    {
+    public:
+        NoCopy()
+        {
+        }
+        NoCopy(const NoCopy &np) = delete;
+        NoCopy operator=(const NoCopy &np) = delete;
+        ~NoCopy()
+        {
+        }
+    };
+
+    class UdpServer : public NoCopy
     {
     public:
         UdpServer(add_user_t addUser, dispatch_msg_t dispatchMsg, del_user_t delUser, uint16_t port = default_port)
@@ -102,13 +116,18 @@ namespace UdpServerModule
                         {
                             // 删除用户
                             _delUser(user);
-                            message = user.getName() + ":" + "(" + user.getSockAddrIn().getIp() + ":" + std::to_string(user.getSockAddrIn().getPort()) + ")" + " offline";
+                            message = user.getName() + " (" + user.getSockAddrIn().getIp() + ":" + std::to_string(user.getSockAddrIn().getPort()) + ")" + " offline";
                         }
                         else if (strcmp(message.c_str(), "online") == 0)
                         {
                             // 添加用户
                             _addUser(user);
-                            message = user.getName() + ":" + "(" + user.getSockAddrIn().getIp() + ":" + std::to_string(user.getSockAddrIn().getPort()) + ")：" + message;
+                            message = user.getName() + " (" + user.getSockAddrIn().getIp() + ":" + std::to_string(user.getSockAddrIn().getPort()) + ")：" + message;
+                        }
+                        else
+                        {
+                            // 仅添加用户标识
+                            message = user.getName() + " (" + user.getSockAddrIn().getIp() + ":" + std::to_string(user.getSockAddrIn().getPort()) + ")：" + message;
                         }
 
                         // 2. 创建线程池并添加任务

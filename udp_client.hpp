@@ -84,7 +84,7 @@ namespace UdpClientModule
                 ssize_t n = recvfrom(_socketfd, buffer, sizeof(buffer) - 1, 0, reinterpret_cast<struct sockaddr *>(&temp), &length);
 
                 if (n > 0)
-                    std::cerr << "收到消息：" << buffer << std::endl;
+                    std::cerr << buffer << std::endl;
             }
         }
 
